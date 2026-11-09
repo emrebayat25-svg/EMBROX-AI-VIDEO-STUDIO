@@ -1,1 +1,145 @@
 
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090e1b">
+<title>EMBROX AI VIDEO STUDIO</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#090e1b;color:#f5f7ff;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif}
+header{padding:24px 18px;background:linear-gradient(140deg,#142a43,#0b1020);border-bottom:1px solid #293c54}
+h1{font-size:24px;margin:0;letter-spacing:1px}
+small{color:#71d8cf}
+main{max-width:650px;margin:auto;padding:18px}
+section{background:#141d30;border:1px solid #2b3951;border-radius:18px;padding:18px;margin-bottom:16px}
+h2{font-size:17px;margin:0 0 15px}
+label{display:block;margin:12px 0 7px;color:#bac7dd}
+input,select,textarea{width:100%;background:#0b1424;color:white;border:1px solid #41516a;border-radius:10px;padding:12px;font:inherit}
+textarea{min-height:125px;resize:vertical}
+button{background:#19b9b1;color:#06121d;border:0;border-radius:11px;padding:13px 16px;font-weight:700;font-size:15px;cursor:pointer}
+button.secondary{background:#293950;color:white}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}
+.preview{width:100%;max-height:300px;object-fit:contain;border-radius:12px;margin-top:14px;display:none;background:#050914}
+#result{white-space:pre-wrap;color:#dce8f8;line-height:1.6}
+.note{color:#a6b7ce;font-size:13px;line-height:1.5}
+footer{text-align:center;color:#74869d;padding:20px}
+</style>
+</head>
+<body>
+<header>
+<h1>EMBROX <span style="color:#2ad7c7">AI VIDEO STUDIO</span></h1>
+<small>Mobile Cinematic Creator · V1</small>
+</header>
+<main>
+<section>
+<h2>🎬 Yeni Video Projesi</h2>
+<label>Proje adı</label>
+<input id="project" value="EMBROX Midnight Sessions">
+<label>Video formatı</label>
+<select id="ratio">
+<option value="16:9">16:9 YouTube</option>
+<option value="9:16">9:16 Shorts</option>
+<option value="1:1">1:1 Kare</option>
+</select>
+<label>Toplam video süresi</label>
+<select id="duration">
+<option value="10">10 saniye</option>
+<option value="30">30 saniye</option>
+<option value="60">60 saniye</option>
+<option value="180">3 dakika</option>
+<option value="300">5 dakika</option>
+</select>
+</section>
+
+<section>
+<h2>🖼️ Görsel Yükle</h2>
+<input id="image" type="file" accept="image/*">
+<img id="preview" class="preview" alt="Yüklenen görsel">
+<p class="note">Görsel yalnızca bu ekranda önizlenir. Sunucuya yüklenmez.</p>
+</section>
+
+<section>
+<h2>✨ Sinematik Sahne Tasarımı</h2>
+<label>Sahne açıklaması</label>
+<textarea id="scene">Lüks gece kulübünde doğal dans hareketleri, lacivert ve altın ışıklar, sinematik kamera hareketi.</textarea>
+<label>Kamera hareketi</label>
+<select id="camera">
+<option>Yavaş ileri yaklaşma</option>
+<option>Yumuşak sağa kayma</option>
+<option>Arkadan takip çekimi</option>
+<option>Sabit sinematik kamera</option>
+<option>Yavaş geri uzaklaşma</option>
+</select>
+<div class="actions">
+<button onclick="generate()">Sahne Komutu Oluştur</button>
+<button class="secondary" onclick="copyPrompt()">Komutu Kopyala</button>
+</div>
+</section>
+
+<section>
+<h2>📋 Üretim Planı</h2>
+<div id="result">Henüz sahne komutu oluşturulmadı.</div>
+<div class="actions">
+<button class="secondary" onclick="downloadPlan()">Planı İndir</button>
+</div>
+<p class="note">Bu sürüm video render etmez. Gerçek AI video üretimi sonraki aşamada bağlanacaktır.</p>
+</section>
+</main>
+<footer>© EMBROX MUSIC · AI VIDEO STUDIO</footer>
+<script>
+const $=id=>document.getElementById(id);
+let promptText="";
+let imageURL=null;
+$("image").addEventListener("change",e=>{
+ const file=e.target.files[0];
+ if(imageURL) URL.revokeObjectURL(imageURL);
+ if(!file){$("preview").style.display="none";return}
+ imageURL=URL.createObjectURL(file);
+ $("preview").src=imageURL;
+ $("preview").style.display="block";
+});
+function generate(){
+ const total=Number($("duration").value);
+ const count=Math.ceil(total/10);
+ const scene=$("scene").value.trim();
+ if(!scene){alert("Sahne açıklaması gir.");return}
+ const lines=[
+ "EMBROX AI VIDEO STUDIO",
+ "Proje: "+$("project").value,
+ "Format: "+$("ratio").value,
+ "Süre: "+total+" saniye",
+ "Sahne sayısı: "+count,
+ "",
+ "10 SANİYELİK SAHNE KOMUTU:",
+ scene+". Kamera: "+$("camera").value+
+ ". Gerçekçi hareketler, tek kesintisiz çekim, doğal ışık ve yumuşak geçiş. 10 saniye, "+$("ratio").value+
+ ". Konuşma, yazı ve logo yok.",
+ "",
+ "Not: Her sahne için komut ayrı ayrı uyarlanmalıdır."
+ ];
+ promptText=lines.join("\n");
+ $("result").textContent=promptText;
+}
+async function copyPrompt(){
+ if(!promptText)generate();
+ try{
+  await navigator.clipboard.writeText(promptText);
+  alert("Komut kopyalandı.");
+ }catch(e){
+  alert("Kopyalama başarısız. Metni elle seçebilirsin.");
+ }
+}
+function downloadPlan(){
+ if(!promptText)generate();
+ const blob=new Blob([promptText],{type:"text/plain;charset=utf-8"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a");
+ a.href=url;a.download="EMBROX_VIDEO_PLAN.txt";a.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+</script>
+</body>
+</html>
+
